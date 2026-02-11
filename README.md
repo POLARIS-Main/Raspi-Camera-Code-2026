@@ -1,135 +1,57 @@
-# WALDO: Bluetooth Camera & Local Storage
+# WALDO Setup Guide
 
-This guide sets up a Raspberry Pi Zero 2 W to stream live video over a Bluetooth network and save high-res photos to an internal folder (for when it wanders out of range).
+This repository already contains the camera server (`app.py`) that streams video over Bluetooth and saves photos locally. Follow these steps to prepare a Raspberry Pi Zero 2 W and start the application.
 
 ## Prerequisites
 
-* Raspberry Pi Zero 2 W with Raspberry Pi OS installed
-* Pi Camera Module connected and enabled
-* A phone or laptop for viewing the feed
+* Raspberry Pi Zero 2 W running Raspberry Pi OS (Lite or Desktop)
+* Pi Camera Module connected and enabled via `raspi-config`
+* Bluetooth adapter (built-in on the Pi Zero 2 W)
+* A client device (phone/laptop) that can pair over Bluetooth
 
-## 1. Setup the "Moon" Network (Bluetooth PAN)
-
-Since there's no Wi-Fi on the moon, we'll use the Pi as a Bluetooth Access Point.
-
-### Install dependencies
+## Install the required packages
 
 ```bash
 sudo apt update
-sudo apt install bluez python3-pip python3-opencv flask
+sudo apt install bluez python3-pip python3-opencv python3-flask
+python3 -m pip install --upgrade pip
 ```
 
-### Make the Pi discoverable
+## Configure Bluetooth Personal Area Network (PAN)
 
-```bash
-sudo bluetoothctl
-```
+1. Start the Bluetooth control utility:
+   ```bash
+   sudo bluetoothctl
+   ```
+2. Inside the interactive prompt, enable power, discoverability, and pairability:
+   ```
+   power on
+   discoverable on
+   pairable on
+   exit
+   ```
+3. On your phone or laptop, pair with the Pi and join the Personal Area Network (Bluetooth tethering).
 
-Inside the Bluetooth prompt, type:
+## Run the existing server
 
-```
-power on
-discoverable on
-pairable on
-exit
-```
+1. Navigate to this project directory:
+   ```bash
+   cd /path/to/Raspi-Camera-Code-2026
+   ```
+2. Start the Flask server:
+   ```bash
+   python3 app.py
+   ```
 
-### Connect your device
+## Access the live feed
 
-Go to your phone/laptop Bluetooth settings, pair with the Pi, and select "Join Personal Area Network" (or "Bluetooth Tethering").
+1. Find the Pi IP address assigned to the Bluetooth interface with:
+   ```bash
+   hostname -I
+   ```
+2. Open a browser on the paired device and visit `http://[PI_BLUETOOTH_IP]:5000` to view the stream and capture button.
 
-## 2. The Main Code
+## Notes
 
-Create a folder for your project and a file named `app.py`. This script handles the live stream and the "Save Photo" logic.
-
-```python
-import cv2
-import os
-from flask import Flask, Response, render_template_string
-from datetime import datetime
-
-app = Flask(__name__)
-camera = cv2.VideoCapture(0)
-
-# Folder to store photos when out of range
-SAVE_DIR = "moon_shots"
-if not os.path.exists(SAVE_DIR):
-    os.makedirs(SAVE_DIR)
-
-def gen_frames():
-    while True:
-        success, frame = camera.read()
-        if not success: break
-        # Resize for Bluetooth speed (low res = smoother)
-        small_frame = cv2.resize(frame, (320, 240))
-        _, buffer = cv2.imencode('.jpg', small_frame)
-        yield (b'--frame\r\n'
-               b'Content-Type: image/jpeg\r\n\r\n' + buffer.tobytes() + b'\r\n')
-
-@app.route('/')
-def index():
-    return '<h1>MoonBot Live</h1><img src="/video"><br><br><form action="/capture" method="post"><button type="submit" style="width:200px;height:50px;">CAPTURE HIGH-RES PHOTO</button></form>'
-
-@app.route('/video')
-def video():
-    return Response(gen_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
-
-@app.route('/capture', methods=['POST'])
-def capture():
-    success, frame = camera.read()
-    if success:
-        name = f"{SAVE_DIR}/shot_{datetime.now().strftime('%H%M%S')}.jpg"
-        cv2.imwrite(name, frame)
-    return "Photo Saved to Pi! <a href='/'>Go Back</a>"
-
-if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=5000)
-```
-
-## 3. How to Run & View
-
-### Start the script
-
-```bash
-python3 app.py
-```
-
-### Find the IP
-
-Type `hostname -I` in your terminal. It usually starts with `192.168...` (look for the Bluetooth interface IP).
-
-### Open the Site
-
-On your paired phone, open the browser and go to:
-
-```
-http://[YOUR_PI_IP]:5000
-```
-
-## 4. Troubleshooting the "Moon" Environment
-
-* **Video is laggy**: Bluetooth is slow. If it freezes, lower the numbers in the `cv2.resize` line (e.g., `160, 120`).
-
-* **Connection lost**: If the robot goes out of range, the site will stop loading. It will automatically work again once you get back within ~20 feet.
-
-* **Auto-Start**: To make this run as soon as the Pi gets power, add `python3 /path/to/app.py &` to your `/etc/rc.local` file.
-
-## Project Structure
-
-```
-moonbot/
-├── app.py              # Main application
-└── moon_shots/         # Captured photos (auto-created)
-    ├── shot_143022.jpg
-    ├── shot_143045.jpg
-    └── ...
-```
-
-## Features
-
-- **Live streaming** over Bluetooth PAN
-- **High-resolution capture** stored locally
-- **Web interface** accessible from any paired device
-- **Offline operation** - photos saved even when out of range
-
----
+* The script creates `moon_shots/` automatically and keeps saving captures even when the viewer disconnects.
+* You can adjust Bluetooth or Flask runtime settings by editing `app.py`, but the code itself already exists in this repo.
