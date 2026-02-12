@@ -25,7 +25,7 @@ def gen_frames():
 
 @app.route('/')
 def index():
-    return '<h1>MoonBot Live</h1><img src="/video"><br><br><form action="/capture" method="post"><button type="submit" style="width:200px;height:50px;">CAPTURE HIGH-RES PHOTO</button></form>'
+    return '<h1>WALDO Live</h1><img src="/video"><br><br><form action="/capture" method="post"><button type="submit" style="width:200px;height:50px;">CAPTURE HIGH-RES PHOTO</button></form>'
 
 @app.route('/video')
 def video():
