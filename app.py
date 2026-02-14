@@ -273,9 +273,6 @@ def index():
             <div id="gallery" class="content-box hidden">
                 <h1>Gallery</h1>
                 <p>Your captured images will appear here.</p>
-                <a href="/gallery">
-                    <button class="capture-button">Open Full Gallery</button>
-                </a>
             </div>
 
         </div>
