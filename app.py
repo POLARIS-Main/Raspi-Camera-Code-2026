@@ -26,14 +26,163 @@ def gen_frames():
 @app.route('/')
 def index():
     return '''
-    <h1>WALDO Live</h1>
-    <img src="/video"><br><br>
-    <form action="/capture" method="post">
-        <button type="submit" style="width:200px;height:50px;">CAPTURE HIGH-RES PHOTO</button>
-    </form>
-    <br>
-    <a href="/gallery"><button style="width:200px;height:50px;">VIEW GALLERY</button></a>
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>WALDO Live</title>
+        <style>
+            body {
+                margin: 0;
+                font-family: Arial, sans-serif;
+                background-color: #0f172a;
+                color: white;
+                display: flex;
+                height: 100vh;
+            }
+
+            /* Sidebar */
+            .sidebar {
+                width: 250px;
+                background-color: #1e293b;
+                padding: 20px;
+                display: flex;
+                flex-direction: column;
+                box-shadow: 2px 0 10px rgba(0,0,0,0.5);
+            }
+
+            .sidebar h2 {
+                text-align: center;
+                margin-bottom: 40px;
+            }
+
+            .nav-button {
+                padding: 15px;
+                margin-bottom: 15px;
+                border: none;
+                border-radius: 8px;
+                background-color: #334155;
+                color: white;
+                cursor: pointer;
+                font-size: 16px;
+                transition: 0.3s;
+                text-align: left;
+            }
+
+            .nav-button:hover {
+                background-color: #475569;
+            }
+
+            /* Main content */
+            .main {
+                flex-grow: 1;
+                padding: 40px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .content-box {
+                background-color: #1e293b;
+                padding: 20px;
+                border-radius: 12px;
+                box-shadow: 0 0 15px rgba(0,0,0,0.4);
+                width: 80%;
+                max-width: 900px;
+                text-align: center;
+            }
+
+            img {
+                width: 100%;
+                border-radius: 10px;
+                margin-bottom: 20px;
+            }
+
+            .logo {
+                width: 100%;
+                max-width: 140px;
+                height: auto;
+                border-radius: 50%;
+                object-fit: contain;
+                display: block;
+                margin: 0 auto;
+            }
+
+            .capture-button {
+                padding: 15px 30px;
+                font-size: 16px;
+                border-radius: 8px;
+                border: none;
+                cursor: pointer;
+                background-color: #e63946;
+                color: white;
+                transition: 0.3s;
+            }
+
+            .capture-button:hover {
+                background-color: #ff4d6d;
+            }
+
+            .hidden {
+                display: none;
+            }
+
+            a {
+                text-decoration: none;
+            }
+        </style>
+
+        <script>
+            function showFeed() {
+                document.getElementById("feed").classList.remove("hidden");
+                document.getElementById("gallery").classList.add("hidden");
+            }
+
+            function showGallery() {
+                document.getElementById("gallery").classList.remove("hidden");
+                document.getElementById("feed").classList.add("hidden");
+            }
+        </script>
+    </head>
+
+    <body>
+
+        <div class="sidebar">
+            <div class="logo-container">
+              <img src="/static/POLARIS_LOGO.png" class="logo" alt="WALDO Live logo">
+              <h2>WALDO Live</h2>
+            </div>
+
+            <button class="nav-button" onclick="showFeed()">📹 Live Feed</button>
+            <button class="nav-button" onclick="showGallery()">🖼 Gallery</button>
+
+            <form action="/capture" method="post">
+                <button class="nav-button" type="submit">📸 Capture Photo</button>
+            </form>
+        </div>
+
+        <div class="main">
+
+            <!-- FEED VIEW -->
+            <div id="feed" class="content-box">
+                <h1>Live Camera Feed</h1>
+                <img src="/video">
+            </div>
+
+            <!-- GALLERY VIEW -->
+            <div id="gallery" class="content-box hidden">
+                <h1>Gallery</h1>
+                <p>Your captured images will appear here.</p>
+                <a href="/gallery">
+                    <button class="capture-button">Open Full Gallery</button>
+                </a>
+            </div>
+
+        </div>
+
+    </body>
+    </html>
     '''
+
 
 @app.route('/video')
 def video():
