@@ -107,6 +107,14 @@ def index():
                 margin: 0 auto;
             }
 
+            .capture-panel {
+                position: relative;
+                width: 100%;
+                display: flex;
+                justify-content: center;
+                margin-bottom: 8px;
+            }
+
             .capture-button {
                 padding: 15px 30px;
                 font-size: 16px;
@@ -122,12 +130,84 @@ def index():
                 background-color: #ff4d6d;
             }
 
+            .capture-feedback {
+                position: absolute;
+                left: 50%;
+                bottom: -36px;
+                transform: translateX(-50%);
+                padding: 6px 14px;
+                border-radius: 999px;
+                background-color: rgba(14, 165, 233, 0.95);
+                color: white;
+                font-size: 0.9rem;
+                display: inline-flex;
+                gap: 6px;
+                align-items: center;
+                opacity: 0;
+                pointer-events: none;
+            }
+
+            .capture-feedback.visible {
+                animation: fadePop 1.2s ease forwards;
+            }
+
+            @keyframes fadePop {
+                0% {
+                    opacity: 0;
+                    transform: translate(-50%, -5px) scale(0.9);
+                }
+                20% {
+                    opacity: 1;
+                    transform: translate(-50%, 0) scale(1);
+                }
+                70% {
+                    opacity: 1;
+                    transform: translate(-50%, 0) scale(1);
+                }
+                100% {
+                    opacity: 0;
+                    transform: translate(-50%, -10px) scale(0.95);
+                }
+            }
+
             .hidden {
                 display: none;
             }
 
             a {
                 text-decoration: none;
+            }
+
+            @media (max-width: 768px) {
+                body {
+                    flex-direction: column;
+                }
+
+                .sidebar {
+                    width: 100%;
+                    flex-direction: row;
+                    flex-wrap: wrap;
+                    justify-content: space-between;
+                    align-items: center;
+                }
+
+                .logo-container {
+                    margin: 0 auto 8px;
+                }
+
+                .nav-button {
+                    width: calc(50% - 12px);
+                    margin-bottom: 10px;
+                }
+
+                .main {
+                    width: 100%;
+                    padding: 20px;
+                }
+
+                .content-box {
+                    width: 90%;
+                }
             }
         </style>
 
@@ -141,6 +221,24 @@ def index():
                 document.getElementById("gallery").classList.remove("hidden");
                 document.getElementById("feed").classList.add("hidden");
             }
+
+            document.addEventListener('DOMContentLoaded', () => {
+                const form = document.getElementById('capture-form');
+                const feedback = document.querySelector('.capture-feedback');
+
+                const triggerFeedback = () => {
+                    if (!feedback) return;
+                    feedback.classList.remove('visible');
+                    void feedback.offsetWidth;
+                    feedback.classList.add('visible');
+                };
+
+                form?.addEventListener('submit', (event) => {
+                    event.preventDefault();
+                    fetch('/capture', { method: 'POST' })
+                        .finally(() => triggerFeedback());
+                });
+            });
         </script>
     </head>
 
@@ -155,9 +253,12 @@ def index():
             <button class="nav-button" onclick="showFeed()">📹 Live Feed</button>
             <button class="nav-button" onclick="showGallery()">🖼 Gallery</button>
 
-            <form action="/capture" method="post">
-                <button class="nav-button" type="submit">📸 Capture Photo</button>
-            </form>
+            <div class="capture-panel">
+                <form id="capture-form" action="/capture" method="post">
+                    <button class="nav-button capture-button" type="submit">📸 Capture Photo</button>
+                </form>
+                <span class="capture-feedback" role="status" aria-live="polite">📸 Captured!</span>
+            </div>
         </div>
 
         <div class="main">
