@@ -9,15 +9,21 @@ This guide walks through setting up your POLARIS camera + Flask app on a Raspber
    - Enable SSH
    - Configure Wi-Fi (or plan to use Ethernet)
    - Set your username/password
-3. Insert SD card and boot Pi.
+3. Insert SD card and boot Pi. This can take upwards of 10 minutes; be patient.
 
 ## 2️⃣ SSH Into the Pi
 
 ```bash
-ssh pi@<PI_IP_ADDRESS>
+ssh pi@<PI_HOSTNAME>
 ```
 
-Replace `<PI_IP_ADDRESS>` with your Pi's IP. For Ethernet, you can find the Pi's IP in your router's connected devices.
+Replace `<PI_HOSTNAME>` with your Pi's IP. For Ethernet, you can find the Pi's IP in your router's connected devices.
+
+If that doesn't work... ping each ip in a range with this command:
+
+```bash
+for /L %i in (0,1,255) do @ping -n 1 -w 100 192.168.0.%i | find "TTL="
+```
 
 ## 3️⃣ Update System Packages
 
